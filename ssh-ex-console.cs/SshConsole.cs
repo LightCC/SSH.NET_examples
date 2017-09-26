@@ -9,7 +9,7 @@ using Renci.SshNet;
 
 namespace ssh_ex_console.cs
 {
-    public class SshExamples
+    public class SshConsole
     {
         private ConnectionInfo _localConnectionInfo = null;
 

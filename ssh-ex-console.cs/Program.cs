@@ -12,7 +12,7 @@ namespace ssh_ex_console.cs
     {
         static void Main(string[] args)
         {
-            SshExamples sshEx = new SshExamples();
+            SshConsole sshEx = new SshConsole();
             sshEx.TestBasicSshCommandsWithStream();
         }
     }
