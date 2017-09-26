@@ -58,8 +58,10 @@ namespace ssh_ex_console.cs
             if (_localConnectionInfo == null)
             {
                 // hardcoded test vars
-                string ip = "192.168.42.153";
-                int port = 22;
+                string hostIp = "192.168.42.153";
+                int hostPort = 22;
+                Console.WriteLine("Host: {0}:{1}{2}", hostIp, hostPort, Environment.NewLine);
+
                 Console.Write("User: ");
                 string username = Console.ReadLine().Trim();
                 Console.Write("Pass: ");
@@ -75,7 +77,7 @@ namespace ssh_ex_console.cs
                 // Pick which authentication method to use for this test
                 AuthenticationMethod auth = authPassword;
 
-                _localConnectionInfo = new ConnectionInfo(ip, port, username, auth);
+                _localConnectionInfo = new ConnectionInfo(hostIp, hostPort, username, auth);
             }
         }
 
