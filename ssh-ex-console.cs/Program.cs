@@ -45,8 +45,10 @@ namespace ssh_ex_console.cs
             // hardcoded test vars
             string ip = "192.168.42.153";
             int port = 22;
-            string username = "";
-            string password = "";
+            Console.Write("Username: ");
+            string username = Console.ReadLine().Trim();
+            Console.Write("Password: ");
+            string password = Console.ReadLine().Trim();
             // var privateKeyFile = new PrivateKeyFile("c:\\privatekeyfilename", "passPhrase");
 
             // Setup all the possible authentication methods
