@@ -62,6 +62,23 @@ namespace ssh_ex_console.cs
                 int hostPort = 22;
                 Console.WriteLine("Host: {0}:{1}{2}", hostIp, hostPort, Environment.NewLine);
 
+                string answer;
+                do
+                {
+                    Console.WriteLine("Use this Host:Port? [Y]/n?");
+                    answer = Console.ReadLine().Trim().ToLower();
+
+                } while (answer != "y" && answer != "" && answer != "n");
+
+                if (answer == "n" ) // Don't use default, ask for new one
+                {
+                    Console.Write("Host(name or IP): ");
+                    hostIp = Console.ReadLine().Trim();
+
+                    Console.Write("Host Port: ");
+                    hostPort = Convert.ToInt32(Console.ReadLine().Trim());
+                }
+
                 Console.Write("User: ");
                 string username = Console.ReadLine().Trim();
                 Console.Write("Pass: ");
