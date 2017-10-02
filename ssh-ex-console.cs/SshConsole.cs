@@ -6,18 +6,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Renci.SshNet;
+using SshEngine;
 
 namespace ssh_ex_console.cs
 {
     public class SshConsole
     {
-        private ConnectionInfo _localConnectionInfo = null;
+        private SshConnection _localSsh;
 
         public void TestBasicSshCommandsWithStream()
         {
-            GetLocalConnectionInfo();
+            _localSsh = new SshConnection();
+            UpdateInfoFromConsole();
 
-            using (var sshClient = new SshClient(_localConnectionInfo))
+            using (var sshClient = new SshClient(_localSsh.Info))
             {
                 string cmd = String.Empty;
                 string cmdOut = String.Empty;
@@ -53,50 +55,45 @@ namespace ssh_ex_console.cs
             }
         }
 
-        private void GetLocalConnectionInfo()
+        public void UpdateInfoFromConsole()
         {
-            if (_localConnectionInfo == null)
+            string inputUseHost, input;
+            do
             {
-                // hardcoded test vars
-                string hostIp = "192.168.42.153";
-                int hostPort = 22;
-                Console.WriteLine("Host: {0}:{1}{2}", hostIp, hostPort, Environment.NewLine);
+                Console.WriteLine("Host: {0}:{1}", _localSsh.HostIp, _localSsh.HostPort);
+                Console.Write("Use this Host (Y/n)? ");
+                inputUseHost = Console.ReadLine().ToLower().Trim();
 
-                string answer;
-                do
+                if (inputUseHost == "n")
                 {
-                    Console.WriteLine("Use this Host:Port? [Y]/n?");
-                    answer = Console.ReadLine().Trim().ToLower();
-
-                } while (answer != "y" && answer != "" && answer != "n");
-
-                if (answer == "n" ) // Don't use default, ask for new one
-                {
-                    Console.Write("Host(name or IP): ");
-                    hostIp = Console.ReadLine().Trim();
-
-                    Console.Write("Host Port: ");
-                    hostPort = Convert.ToInt32(Console.ReadLine().Trim());
+                    Console.Write("New Host (Name/IP): ");
+                    _localSsh.HostIp = Console.ReadLine().Trim();
+                    Console.Write("New Host Port [22]: ");
+                    input = Console.ReadLine().Trim();
+                    try
+                    {
+                        _localSsh.HostPort = Convert.ToInt32(input);
+                    }
+                    catch
+                    {
+                        _localSsh.HostPort = 22;
+                    }
+                    Console.WriteLine();
                 }
+            } while (inputUseHost != "y");
 
-                Console.Write("User: ");
-                string username = Console.ReadLine().Trim();
-                Console.Write("Pass: ");
-                string password = Console.ReadLine().Trim();
-                // var privateKeyFile = new PrivateKeyFile("c:\\privatekeyfilename", "passPhrase");
+            Console.Write("Username [{0}]: ", _localSsh.Username);
+            string userInput = Console.ReadLine().Trim();
+            if (userInput.Length > 0)
+            {
+                _localSsh.Username = userInput;
+                Console.Write("Password: ");
+                _localSsh.Password = Console.ReadLine().Trim();
+            } // else do nothing - they just hit "Enter" or entered all whitespace 
 
-                // Setup all the possible authentication methods
-                AuthenticationMethod authNone = new NoneAuthenticationMethod(username);
-                AuthenticationMethod authPassword = new PasswordAuthenticationMethod(username, password);
-                AuthenticationMethod authKeyboard = new KeyboardInteractiveAuthenticationMethod(username);
-                //AuthenticationMethod authPrivateKey = new PrivateKeyAuthenticationMethod(username, privateKeyFile);
-
-                // Pick which authentication method to use for this test
-                AuthenticationMethod auth = authPassword;
-
-                _localConnectionInfo = new ConnectionInfo(hostIp, hostPort, username, auth);
-            }
+            _localSsh.UpdateInfo();
         }
+
 
         public static string ExecuteSshCmd_ReturnCmdOutErr(SshClient sshClient, string commandToExecute)
         {
