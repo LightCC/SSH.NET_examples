@@ -92,7 +92,7 @@ namespace SshEngine
             _info = new ConnectionInfo(_hostIp, _hostPort, _username, _auth);
         }
 
-        public string ToString()
+        public override string ToString()
         {
             string InfoString = String.Empty;
             InfoString = String.Format("Host: {0}:{1}", _hostIp, _hostPort) + Environment.NewLine;
