@@ -77,7 +77,7 @@ namespace ssh_ex_console.cs
                     if (cmd.Length > 0 && cmdlower != "exit")
                     {
                         Console.WriteLine();
-                        cmdout = ExecuteSshCmd_ReturnCmdOutErr(sshClient, cmd);
+                        cmdout = ExecuteSshCmd_ReturnOutErr(sshClient, cmd);
                         Console.WriteLine(cmdout);
                     }
 
@@ -99,7 +99,8 @@ namespace ssh_ex_console.cs
             do
             {
                 Console.WriteLine("Host: {0}:{1}", _localSsh.HostIp, _localSsh.HostPort);
-                Console.WriteLine("Username: {0}; Password: {1}", _localSsh.Username, _localSsh.Password);
+                Console.WriteLine("Username: {0}", _localSsh.Username);
+                Console.WriteLine("Password: {0}", _localSsh.Password);
                 Console.WriteLine();
                 Console.Write("Use this Host and User Info (Y/n)? ");
                 inputUseHost = Console.ReadLine().ToLower().Trim();
@@ -142,10 +143,14 @@ namespace ssh_ex_console.cs
             using (var sshCmd = sshClient.CreateCommand(commandToExecute))
             {
                 string cmdOut = String.Empty;
-                cmdOut += String.Format("COMMAND: \"{0}\"", commandToExecute) + Environment.NewLine;
+
+                if (commandToExecute.Length > 0)
+                {
+                    cmdOut += String.Format("COMMAND: \"{0}\"", commandToExecute) + Environment.NewLine;
+                }
 
                 var result = sshCmd.Execute();
-                if (result != String.Empty)
+                if (result.Length > 0)
                 {
                     cmdOut += "[STDOUT]" + Environment.NewLine;
                     cmdOut += result;
@@ -153,7 +158,32 @@ namespace ssh_ex_console.cs
 
                 var reader = new StreamReader(sshCmd.ExtendedOutputStream);
                 string stdErrorOutput = reader.ReadToEnd();
-                if (stdErrorOutput != String.Empty)
+                if (stdErrorOutput.Length > 0)
+                {
+                    cmdOut += "[STDERR]" + Environment.NewLine;
+                    cmdOut += stdErrorOutput;
+                }
+
+                return cmdOut;
+            }
+        }
+
+        public static string ExecuteSshCmd_ReturnOutErr(SshClient sshClient, string commandToExecute)
+        {
+            using (var sshCmd = sshClient.CreateCommand(commandToExecute))
+            {
+                string cmdOut = String.Empty;
+
+                var result = sshCmd.Execute();
+                if (result.Length > 0)
+                {
+                    cmdOut += "[STDOUT]" + Environment.NewLine;
+                    cmdOut += result;
+                }
+
+                var reader = new StreamReader(sshCmd.ExtendedOutputStream);
+                string stdErrorOutput = reader.ReadToEnd();
+                if (stdErrorOutput.Length > 0)
                 {
                     cmdOut += "[STDERR]" + Environment.NewLine;
                     cmdOut += stdErrorOutput;
