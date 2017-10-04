@@ -1,10 +1,12 @@
 ﻿using System;
 using Renci.SshNet;
+using System.IO;
 
 namespace SshEngine
 {
-    public class SshConnection : ISshConnection
+    public class SshConnection : ISshConnection, ISshCommand
     {
+        // ISshConnection Props
         private string _hostIp;
         private int _hostPort;
         private string _username;
@@ -12,6 +14,12 @@ namespace SshEngine
         private ConnectionInfo _info;
         private AuthenticationMethod _auth;
 
+        // ISshCommand Props
+        private string _cmd;
+        private string _stdout;
+        private string _stderr;
+
+        // ISshConnection Public Properties
         public string HostIp
         {
             get { return _hostIp; }
@@ -48,6 +56,26 @@ namespace SshEngine
             get { return _auth; }
             set { _auth = value; }
         }
+
+        // ISshCommand Public Properties
+        public string Cmd
+        {
+            get { return _cmd; }
+            set { _cmd = value; }
+        }
+
+        public string StdOut
+        {
+            get { return _stdout; }
+            private set { _stdout = value; }
+        }
+
+        public string StdErr
+        {
+            get { return _stderr; }
+            private set { _stderr = value; }
+        }
+
 
         public SshConnection(ConnectionInfo connectionInfo = null)
         {
@@ -90,6 +118,31 @@ namespace SshEngine
             _auth = authPassword;
 
             _info = new ConnectionInfo(_hostIp, _hostPort, _username, _auth);
+        }
+
+        /// <summary>
+        /// Execute a single command on the SSH Connection
+        /// This version explicitly gives the command, rather than using the property
+        /// StdOut and StdErr are put into the local properties
+        /// </summary>
+        /// <param name="sshClient"></param>
+        /// <param name="cmd"></param>
+        public void ExecuteSingleCommand(SshClient sshClient, string cmd)
+        {
+            // Command is explicit, so write it into local SshConnection _cmd first
+            _cmd = cmd;
+            ExecuteSingleCommand(sshClient);
+        }
+
+        public void ExecuteSingleCommand(SshClient sshClient)
+        {
+            using (var sshCmd = sshClient.CreateCommand(_cmd))
+            {
+                _stdout = sshCmd.Execute();
+
+                var reader = new StreamReader(sshCmd.ExtendedOutputStream);
+                _stderr = reader.ReadToEnd();
+            }
         }
 
         public override string ToString()

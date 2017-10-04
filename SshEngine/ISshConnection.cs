@@ -16,6 +16,7 @@ namespace SshEngine
         ConnectionInfo Info { get; }
         AuthenticationMethod Auth { get; set; }
 
+        void ExecuteSingleCommand(SshClient sshClient);
     }
 
 }

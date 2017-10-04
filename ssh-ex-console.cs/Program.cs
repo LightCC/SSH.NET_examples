@@ -23,7 +23,7 @@ namespace ssh_ex_console.cs
                 sshEx.TestBasicSshCommandsWithStream();
             }
 
-            sshEx.ManualCommandLoop();
+            sshEx.ManualSingleCommandLoop();
         }
     }
 }

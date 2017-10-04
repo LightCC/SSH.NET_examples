@@ -29,24 +29,20 @@ namespace ssh_ex_console.cs
                 sshClient.Connect();
 
                 cmd = "echo \"This is StdOut\"; echo \"This is StdErr\" >&2";
-                cmdOut = ExecuteSshCmd_ReturnCmdOutErr(sshClient, cmd);
-                Console.Write(cmdOut);
-
+                ExecuteSshCmdWithFullConsoleOutput(sshClient, _localSsh, cmd);
+                
                 Console.WriteLine("---");
                 cmd = "echo $USER";
-                cmdOut = ExecuteSshCmd_ReturnCmdOutErr(sshClient, cmd);
-                Console.Write(cmdOut);
-
+                ExecuteSshCmdWithFullConsoleOutput(sshClient, _localSsh, cmd);
+                
                 Console.WriteLine("---");
                 cmd = "pwd";
-                cmdOut = ExecuteSshCmd_ReturnCmdOutErr(sshClient, cmd);
-                Console.Write(cmdOut);
-
+                ExecuteSshCmdWithFullConsoleOutput(sshClient, _localSsh, cmd);
+                
                 Console.WriteLine("---");
                 cmd = "df -h";
-                cmdOut = ExecuteSshCmd_ReturnCmdOutErr(sshClient, cmd);
-                Console.Write(cmdOut);
-
+                ExecuteSshCmdWithFullConsoleOutput(sshClient, _localSsh, cmd);
+                
                 // Read an input <Enter> so the window doesn't go away before we can see/read it
                 Console.WriteLine();
                 Console.Write("Press <Enter> To Continue");
@@ -60,12 +56,22 @@ namespace ssh_ex_console.cs
             }
         }
 
-        public void ManualCommandLoop()
+
+        /// <summary>
+        /// Loop of single commands entered at console and sent to remote
+        /// Each command is essentially executed as a new login
+        /// (e.g. remote will always start at same login directory)
+        /// 
+        /// Will List output of the command to console,
+        /// and if non-empty, a [[StdErr]] heading and error output
+        /// 
+        /// Use 'exit' command to break the loop
+        /// </summary>
+        public void ManualSingleCommandLoop()
         {
             using (var sshClient = new SshClient(_localSsh.Info))
             {
-                string cmd, cmdlower;
-                string cmdout;
+                string cmd;
 
                 sshClient.Connect();
 
@@ -73,15 +79,22 @@ namespace ssh_ex_console.cs
                 {
                     Console.Write("{0}:{1} > ", _localSsh.HostIp, _localSsh.HostPort);
                     cmd = Console.ReadLine().Trim();
-                    cmdlower = cmd.ToLower();
-                    if (cmd.Length > 0 && cmdlower != "exit")
+                    if (cmd.Length > 0 && cmd.ToLower() != "exit")
                     {
                         Console.WriteLine();
-                        cmdout = ExecuteSshCmd_ReturnOutErr(sshClient, cmd);
-                        Console.WriteLine(cmdout);
+                        _localSsh.ExecuteSingleCommand(sshClient, cmd);
+                        if (_localSsh.StdOut.Length > 0)
+                        {
+                            Console.WriteLine(_localSsh.StdOut);
+                        }
+                        if(_localSsh.StdErr.Length > 0)
+                        {
+                            Console.WriteLine("[[StdErr]]");
+                            Console.WriteLine(_localSsh.StdErr);
+                        }
                     }
 
-                } while (cmdlower != "exit");
+                } while (cmd.ToLower() != "exit");
 
                 Console.WriteLine();
                 Console.Write("Press <Enter> To Continue");
@@ -138,60 +151,27 @@ namespace ssh_ex_console.cs
         }
 
 
-        public static string ExecuteSshCmd_ReturnCmdOutErr(SshClient sshClient, string commandToExecute)
+        public static void ExecuteSshCmdWithFullConsoleOutput(SshClient sshClient, SshConnection sshConn, string Cmd = null)
         {
-            using (var sshCmd = sshClient.CreateCommand(commandToExecute))
+            if (Cmd == null) { Cmd = sshConn.Cmd; }
+            sshConn.ExecuteSingleCommand(sshClient, Cmd);
+
+            Console.WriteLine("COMMAND: \"{0}\"", sshConn.Cmd);
+
+            if (sshConn.StdOut.Length > 0)
             {
-                string cmdOut = String.Empty;
-
-                if (commandToExecute.Length > 0)
-                {
-                    cmdOut += String.Format("COMMAND: \"{0}\"", commandToExecute) + Environment.NewLine;
-                }
-
-                var result = sshCmd.Execute();
-                if (result.Length > 0)
-                {
-                    cmdOut += "[STDOUT]" + Environment.NewLine;
-                    cmdOut += result;
-                }
-
-                var reader = new StreamReader(sshCmd.ExtendedOutputStream);
-                string stdErrorOutput = reader.ReadToEnd();
-                if (stdErrorOutput.Length > 0)
-                {
-                    cmdOut += "[STDERR]" + Environment.NewLine;
-                    cmdOut += stdErrorOutput;
-                }
-
-                return cmdOut;
+                Console.WriteLine("[STDOUT]");
+                Console.WriteLine(sshConn.StdOut);
             }
+
+            if (sshConn.StdErr.Length > 0)
+            {
+                Console.WriteLine("[STDERR]");
+                Console.WriteLine(sshConn.StdErr);
+            }
+
         }
 
-        public static string ExecuteSshCmd_ReturnOutErr(SshClient sshClient, string commandToExecute)
-        {
-            using (var sshCmd = sshClient.CreateCommand(commandToExecute))
-            {
-                string cmdOut = String.Empty;
-
-                var result = sshCmd.Execute();
-                if (result.Length > 0)
-                {
-                    cmdOut += "[STDOUT]" + Environment.NewLine;
-                    cmdOut += result;
-                }
-
-                var reader = new StreamReader(sshCmd.ExtendedOutputStream);
-                string stdErrorOutput = reader.ReadToEnd();
-                if (stdErrorOutput.Length > 0)
-                {
-                    cmdOut += "[STDERR]" + Environment.NewLine;
-                    cmdOut += stdErrorOutput;
-                }
-
-                return cmdOut;
-            }
-        }
 
     }
 }
