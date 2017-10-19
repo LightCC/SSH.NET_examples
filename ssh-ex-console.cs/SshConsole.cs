@@ -12,44 +12,44 @@ namespace ssh_ex_console.cs
 {
     public class SshConsole
     {
-        private SshConnection _localSsh;
+        private SshSessionBase _localSsh;
 
         public SshConsole()
         {
-            _localSsh = new SshConnection();
+            string host = Properties.Settings.Default.HostName;
+            int port = Properties.Settings.Default.HostPort;
+            string user = Properties.Settings.Default.Username;
+            string pass = Properties.Settings.Default.Password;
+
+            _localSsh = new SshSessionBase(host, port, user, pass);
         }
 
         public void TestBasicSshCommandsWithStream()
         {
-            using (var sshClient = new SshClient(_localSsh.Info))
             {
-                string cmd = String.Empty;
+            string cmd = String.Empty;
                 string cmdOut = String.Empty;
 
-                sshClient.Connect();
-
                 cmd = "echo \"This is StdOut\"; echo \"This is StdErr\" >&2";
-                ExecuteSshCmdWithFullConsoleOutput(sshClient, _localSsh, cmd);
+                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
                 
                 Console.WriteLine("---");
                 cmd = "echo $USER";
-                ExecuteSshCmdWithFullConsoleOutput(sshClient, _localSsh, cmd);
+                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
                 
                 Console.WriteLine("---");
                 cmd = "pwd";
-                ExecuteSshCmdWithFullConsoleOutput(sshClient, _localSsh, cmd);
+                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
                 
                 Console.WriteLine("---");
                 cmd = "df -h";
-                ExecuteSshCmdWithFullConsoleOutput(sshClient, _localSsh, cmd);
+                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
                 
                 // Read an input <Enter> so the window doesn't go away before we can see/read it
                 Console.WriteLine();
                 Console.Write("Press <Enter> To Continue");
                 Console.ReadLine();
                 Console.WriteLine();
-
-                sshClient.Disconnect();
 
                 //Used with unit test framework
                 //Assert.Inconclusive();
@@ -69,40 +69,32 @@ namespace ssh_ex_console.cs
         /// </summary>
         public void ManualSingleCommandLoop()
         {
-            using (var sshClient = new SshClient(_localSsh.Info))
+            string cmd;
+
+            do
             {
-                string cmd;
-
-                sshClient.Connect();
-
-                do
+                Console.Write("{0}:{1} > ", _localSsh.HostName, _localSsh.HostPort);
+                cmd = Console.ReadLine().Trim();
+                if (cmd.Length > 0 && cmd.ToLower() != "exit")
                 {
-                    Console.Write("{0}:{1} > ", _localSsh.HostIp, _localSsh.HostPort);
-                    cmd = Console.ReadLine().Trim();
-                    if (cmd.Length > 0 && cmd.ToLower() != "exit")
+                    Console.WriteLine();
+                    _localSsh.ExecuteSingleCommand(cmd);
+                    if (_localSsh.StdOut.Length > 0)
                     {
-                        Console.WriteLine();
-                        _localSsh.ExecuteSingleCommand(sshClient, cmd);
-                        if (_localSsh.StdOut.Length > 0)
-                        {
-                            Console.WriteLine(_localSsh.StdOut);
-                        }
-                        if(_localSsh.StdErr.Length > 0)
-                        {
-                            Console.WriteLine("[[StdErr]]");
-                            Console.WriteLine(_localSsh.StdErr);
-                        }
+                        Console.WriteLine(_localSsh.StdOut);
                     }
+                    if(_localSsh.StdErr.Length > 0)
+                    {
+                        Console.WriteLine("[[StdErr]]");
+                        Console.WriteLine(_localSsh.StdErr);
+                    }
+                }
+            } while (cmd.ToLower() != "exit");
 
-                } while (cmd.ToLower() != "exit");
-
-                Console.WriteLine();
-                Console.Write("Press <Enter> To Continue");
-                Console.ReadLine();
-                Console.WriteLine();
-
-                sshClient.Disconnect();
-            }
+            Console.WriteLine();
+            Console.Write("Press <Enter> To Continue");
+            Console.ReadLine();
+            Console.WriteLine();
 
         }
 
@@ -111,7 +103,7 @@ namespace ssh_ex_console.cs
             string inputUseHost, input;
             do
             {
-                Console.WriteLine("Host: {0}:{1}", _localSsh.HostIp, _localSsh.HostPort);
+                Console.WriteLine("Host: {0}:{1}", _localSsh.HostName, _localSsh.HostPort);
                 Console.WriteLine("Username: {0}", _localSsh.Username);
                 Console.WriteLine("Password: {0}", _localSsh.Password);
                 Console.WriteLine();
@@ -121,13 +113,15 @@ namespace ssh_ex_console.cs
                 if (inputUseHost == "n")
                 {
                     Console.Write("New Host (Name/IP): ");
-                    _localSsh.HostIp = Console.ReadLine().Trim();
+                    _localSsh.HostName = Console.ReadLine().Trim();
+                    Properties.Settings.Default.HostName = _localSsh.HostName;
 
                     Console.Write("New Host Port [22]: ");
                     input = Console.ReadLine().Trim();
                     try
                     {
                         _localSsh.HostPort = Convert.ToInt32(input);
+                        Properties.Settings.Default.HostPort = _localSsh.HostPort;
                     }
                     catch
                     {
@@ -139,37 +133,48 @@ namespace ssh_ex_console.cs
                     if (userInput.Length > 0)
                     {
                         _localSsh.Username = userInput;
+                        Properties.Settings.Default.Username = _localSsh.Username;
                     } // else do nothing - they just hit "Enter" or entered all whitespac
 
                     Console.Write("Password: ");
                     _localSsh.Password = Console.ReadLine().Trim();
+                    Properties.Settings.Default.Password = _localSsh.Password;
                     Console.WriteLine();
                 }
             } while (inputUseHost != "y");
 
-            _localSsh.UpdateInfo();
+            _localSsh.UpdateInfoWithPasswordAuthentication();
+            Properties.Settings.Default.Save();
         }
 
 
-        public static void ExecuteSshCmdWithFullConsoleOutput(SshClient sshClient, SshConnection sshConn, string Cmd = null)
+        public static bool ExecuteSshCmdWithFullConsoleOutput(SshSessionBase sshSess, string cmd = null)
         {
-            if (Cmd == null) { Cmd = sshConn.Cmd; }
-            sshConn.ExecuteSingleCommand(sshClient, Cmd);
+            if (cmd == null) { cmd = sshSess.Cmd; }
 
-            Console.WriteLine("COMMAND: \"{0}\"", sshConn.Cmd);
-
-            if (sshConn.StdOut.Length > 0)
+            if (sshSess.ExecuteSingleCommand(cmd))
             {
-                Console.WriteLine("[STDOUT]");
-                Console.WriteLine(sshConn.StdOut);
-            }
+                Console.WriteLine("COMMAND: \"{0}\"", sshSess.Cmd);
 
-            if (sshConn.StdErr.Length > 0)
+                if (sshSess.StdOut.Length > 0)
+                {
+                    Console.WriteLine("[STDOUT]");
+                    Console.WriteLine(sshSess.StdOut);
+                }
+
+                if (sshSess.StdErr.Length > 0)
+                {
+                    Console.WriteLine("[STDERR]");
+                    Console.WriteLine(sshSess.StdErr);
+                }
+                return true;
+            }
+            else
             {
-                Console.WriteLine("[STDERR]");
-                Console.WriteLine(sshConn.StdErr);
+                Console.WriteLine("Unable to Execute Command:");
+                Console.WriteLine(cmd);
+                return false;
             }
-
         }
 
 

@@ -9,14 +9,14 @@ namespace SshEngine
 {
     public interface ISshConnection
     {
-        string HostIp { get; set; }
+        string HostName { get; set; }
         int HostPort { get; set; }
         string Username { get; set; }
         string Password { get; set; }
         ConnectionInfo Info { get; }
         AuthenticationMethod Auth { get; set; }
 
-        void ExecuteSingleCommand(SshClient sshClient);
+        bool ExecuteSingleCommand();
     }
 
 }
