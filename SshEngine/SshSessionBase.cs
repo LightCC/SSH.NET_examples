@@ -1,7 +1,6 @@
 ﻿using System;
 using Renci.SshNet;
 using System.IO;
-using System.Runtime.Remoting.Channels;
 
 namespace SshEngine
 {

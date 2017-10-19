@@ -1,11 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Data.SqlTypes;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Renci.SshNet;
 using SshEngine;
 
 namespace ssh_ex_console.cs
@@ -14,22 +7,29 @@ namespace ssh_ex_console.cs
     {
         private SshSessionBase _localSsh;
 
+        /// <summary>
+        /// Creates an SshSession with methods that will interact with a console
+        /// </summary>
         public SshConsole()
         {
+            // Restore from either the embedded default settings file, or the last host info that was saved in a prior session to a user settings file
             string host = Properties.Settings.Default.HostName;
             int port = Properties.Settings.Default.HostPort;
             string user = Properties.Settings.Default.Username;
             string pass = Properties.Settings.Default.Password;
 
+            // Create the local Ssh session with basic password authentication
             _localSsh = new SshSessionBase(host, port, user, pass);
         }
 
+        /// <summary>
+        /// Tests several basic SSH commands to make sure the connection is functioning. Prints the commands, stdout, and stderr, with headers for each.
+        /// </summary>
         public void TestBasicSshCommandsWithStream()
         {
             {
-            string cmd = String.Empty;
-                string cmdOut = String.Empty;
-
+                string cmd;
+                
                 cmd = "echo \"This is StdOut\"; echo \"This is StdErr\" >&2";
                 ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
                 
@@ -98,6 +98,14 @@ namespace ssh_ex_console.cs
 
         }
 
+        /// <summary>
+        /// Displays Host Name/IP and User/Pass information and asks whether
+        /// to enter new host/user info.  If yes asks for each piece of info
+        /// from the console, then re-asks in a loop
+        /// 
+        /// After replying not to enter new info, will save out current values
+        /// to the user settings file, and update the local ConnectionInfo
+        /// </summary>
         public void UpdateInfoFromConsole()
         {
             string inputUseHost, input;
@@ -107,21 +115,19 @@ namespace ssh_ex_console.cs
                 Console.WriteLine("Username: {0}", _localSsh.Username);
                 Console.WriteLine("Password: {0}", _localSsh.Password);
                 Console.WriteLine();
-                Console.Write("Use this Host and User Info (Y/n)? ");
+                Console.Write("Enter new Host and User Info (y/n)? ");
                 inputUseHost = Console.ReadLine().ToLower().Trim();
 
-                if (inputUseHost == "n")
+                if (inputUseHost == "y")
                 {
                     Console.Write("New Host (Name/IP): ");
                     _localSsh.HostName = Console.ReadLine().Trim();
-                    Properties.Settings.Default.HostName = _localSsh.HostName;
 
                     Console.Write("New Host Port [22]: ");
                     input = Console.ReadLine().Trim();
                     try
                     {
                         _localSsh.HostPort = Convert.ToInt32(input);
-                        Properties.Settings.Default.HostPort = _localSsh.HostPort;
                     }
                     catch
                     {
@@ -133,21 +139,32 @@ namespace ssh_ex_console.cs
                     if (userInput.Length > 0)
                     {
                         _localSsh.Username = userInput;
-                        Properties.Settings.Default.Username = _localSsh.Username;
                     } // else do nothing - they just hit "Enter" or entered all whitespac
 
                     Console.Write("Password: ");
                     _localSsh.Password = Console.ReadLine().Trim();
-                    Properties.Settings.Default.Password = _localSsh.Password;
                     Console.WriteLine();
                 }
-            } while (inputUseHost != "y");
+            } while (inputUseHost != "n" );
 
             _localSsh.UpdateInfoWithPasswordAuthentication();
+
+            Properties.Settings.Default.HostName = _localSsh.HostName;
+            Properties.Settings.Default.HostPort = _localSsh.HostPort;
+            Properties.Settings.Default.Username = _localSsh.Username;
+            Properties.Settings.Default.Password = _localSsh.Password;
             Properties.Settings.Default.Save();
         }
 
 
+        /// <summary>
+        /// Will Execute the given command on the given SshSession, and
+        /// print out the COMMAND, [STDOUT], and [STDERR] to console
+        /// or print an error if connection cannot be made
+        /// </summary>
+        /// <param name="sshSess">SSH Session to send command to</param>
+        /// <param name="cmd">string command to execute</param>
+        /// <returns></returns>
         public static bool ExecuteSshCmdWithFullConsoleOutput(SshSessionBase sshSess, string cmd = null)
         {
             if (cmd == null) { cmd = sshSess.Cmd; }
