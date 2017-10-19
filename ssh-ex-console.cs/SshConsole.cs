@@ -45,10 +45,6 @@ namespace ssh_ex_console.cs
                 cmd = "df -h";
                 ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
                 
-                // Read an input <Enter> so the window doesn't go away before we can see/read it
-                Console.WriteLine();
-                Console.Write("Press <Enter> To Continue");
-                Console.ReadLine();
                 Console.WriteLine();
 
                 //Used with unit test framework
@@ -79,21 +75,18 @@ namespace ssh_ex_console.cs
                 {
                     Console.WriteLine();
                     _localSsh.ExecuteSingleCommand(cmd);
-                    if (_localSsh.StdOut.Length > 0)
+                    if (_localSsh.StdOutText.Length > 0)
                     {
-                        Console.WriteLine(_localSsh.StdOut);
+                        Console.WriteLine(_localSsh.StdOutText);
                     }
-                    if(_localSsh.StdErr.Length > 0)
+                    if(_localSsh.StdErrText.Length > 0)
                     {
                         Console.WriteLine("[[StdErr]]");
-                        Console.WriteLine(_localSsh.StdErr);
+                        Console.WriteLine(_localSsh.StdErrText);
                     }
                 }
             } while (cmd.ToLower() != "exit");
 
-            Console.WriteLine();
-            Console.Write("Press <Enter> To Continue");
-            Console.ReadLine();
             Console.WriteLine();
 
         }
@@ -173,16 +166,16 @@ namespace ssh_ex_console.cs
             {
                 Console.WriteLine("COMMAND: \"{0}\"", sshSess.Cmd);
 
-                if (sshSess.StdOut.Length > 0)
+                if (sshSess.StdOutText.Length > 0)
                 {
                     Console.WriteLine("[STDOUT]");
-                    Console.WriteLine(sshSess.StdOut);
+                    Console.WriteLine(sshSess.StdOutText);
                 }
 
-                if (sshSess.StdErr.Length > 0)
+                if (sshSess.StdErrText.Length > 0)
                 {
                     Console.WriteLine("[STDERR]");
-                    Console.WriteLine(sshSess.StdErr);
+                    Console.WriteLine(sshSess.StdErrText);
                 }
                 return true;
             }

@@ -15,9 +15,13 @@ namespace SshEngine
         private AuthenticationMethod _auth;
 
         // ISshCommand Props
-        private string _cmd;
-        private string _stdout;
-        private string _stderr;
+        private bool _isExecuted;
+        private string _stdoutText;
+        private string _stderrText;
+
+        private MemoryStream _in = new MemoryStream();
+        private MemoryStream _out = new MemoryStream();
+        private MemoryStream _err = new MemoryStream();
 
         // Other Fields
         private SshClient _ssh;
@@ -61,22 +65,24 @@ namespace SshEngine
         }
 
         // ISshCommand Public Properties
-        public string Cmd
+        public bool IsExecuted
         {
-            get { return _cmd; }
-            set { _cmd = value; }
+            get { return _isExecuted; }
+            private set { _isExecuted = value; }
         }
 
-        public string StdOut
+        public string Cmd { get; set; }
+
+        public string StdOutText
         {
-            get { return _stdout; }
-            private set { _stdout = value; }
+            get { return _stdoutText; }
+            private set { _stdoutText = value; }
         }
 
-        public string StdErr
+        public string StdErrText
         {
-            get { return _stderr; }
-            private set { _stderr = value; }
+            get { return _stderrText; }
+            private set { _stderrText = value; }
         }
 
 
@@ -117,17 +123,49 @@ namespace SshEngine
             
         }
 
+        public bool ExecuteCommandInShell(string cmd)
+        {
+            this.Cmd = cmd;
+            return ExecuteCommandInShell();
+        }
+
+        public bool ExecuteCommandInShell()
+        {
+            if (Connect())
+            {
+                var shellIn = new StreamWriter(_in);
+                var shellOut = new StreamReader(_out);
+                var shellErr = new StreamReader(_err);
+
+                shellIn.WriteLine(this.Cmd);
+                shellIn.Flush();
+
+                _stdoutText = shellOut.ReadToEnd();
+                _stderrText = shellErr.ReadToEnd();
+
+                IsExecuted = true;
+            }
+            else
+            {
+                _stdoutText = null;
+                _stderrText = null;
+                IsExecuted = false;
+            }
+            return IsExecuted;
+
+        }
+
         /// <summary>
         /// Execute a single command on the SSH Connection
         /// This version explicitly gives the command, rather than using the property
-        /// StdOut and StdErr are put into the local properties
+        /// StdOut and StdErrText are put into the local properties
         /// </summary>
         /// <param name="sshClient"></param>
         /// <param name="cmd"></param>
         public bool ExecuteSingleCommand(string cmd)
         {
             // Command is explicit, so write it into local SshSessionBase _cmd first
-            _cmd = cmd;
+            this.Cmd = cmd;
             return ExecuteSingleCommand();
         }
 
@@ -135,20 +173,21 @@ namespace SshEngine
         {
             if (Connect())
             {
-                var cmd = _ssh.CreateCommand(_cmd);
-                _stdout = cmd.Execute();
+                var cmd = _ssh.CreateCommand(this.Cmd);
+                _stdoutText = cmd.Execute();
 
                 var reader = new StreamReader(cmd.ExtendedOutputStream);
-                _stderr = reader.ReadToEnd();
+                _stderrText = reader.ReadToEnd();
 
-                return true;
+                IsExecuted = true;
             }
             else
             {
-                _stdout = null;
-                _stderr = null;
-                return false;
+                _stdoutText = null;
+                _stderrText = null;
+                IsExecuted = false;
             }
+            return IsExecuted;
 
         }
 
@@ -174,14 +213,18 @@ namespace SshEngine
                 try
                 {
                     _ssh.Connect();
+                    _ssh.CreateShell(_in, _out, _err, "TEST", 80, 50, 800, 500, null, 1024);
                     return true;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("");
-                    Console.WriteLine(e);
-                    Console.WriteLine("");
-                    return false;
+                    // TODO probably need to tighten this down
+                    // The exact argument thrown is about the IP address being 0.0.0.0 in Dns.GetHostAddresses
+                    if (e is ArgumentException)
+                    {
+                        return false;
+                    }
+                    throw;
                 }
             }
         }
@@ -194,7 +237,7 @@ namespace SshEngine
             }
         }
 
-        public void DisposeOfSshClient()
+        private void DisposeOfSshClient()
         {
             if (_ssh != null)
             {
@@ -205,6 +248,9 @@ namespace SshEngine
 
         public void Dispose()
         {
+            _in = null;
+            _out = null;
+            _err = null;
             DisposeOfSshClient();
         }
 

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ssh-ex-console.cs", "ssh-ex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SshEngine", "SshEngine\SshEngine.csproj", "{36265905-BDB4-4518-BB11-42BC70ED1172}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SshEngine.Tests", "SshEngine.Tests\SshEngine.Tests.csproj", "{7967580F-6EC8-4597-AB8F-C0605AC696A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{36265905-BDB4-4518-BB11-42BC70ED1172}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36265905-BDB4-4518-BB11-42BC70ED1172}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36265905-BDB4-4518-BB11-42BC70ED1172}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7967580F-6EC8-4597-AB8F-C0605AC696A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7967580F-6EC8-4597-AB8F-C0605AC696A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7967580F-6EC8-4597-AB8F-C0605AC696A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7967580F-6EC8-4597-AB8F-C0605AC696A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

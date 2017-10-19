@@ -8,8 +8,9 @@ namespace SshEngine
 {
     public interface ISshCommand
     {
+        bool IsExecuted { get; }
         string Cmd { get; set; }
-        string StdOut { get; }
-        string StdErr { get; }
+        string StdOutText { get; }
+        string StdErrText { get; }
     }
 }
