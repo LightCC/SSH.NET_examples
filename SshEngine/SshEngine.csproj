@@ -47,6 +47,8 @@
     <Compile Include="ISshCommand.cs" />
     <Compile Include="ISshConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SshCmdBase.cs" />
+    <Compile Include="SshCmdBash.cs" />
     <Compile Include="SshSessionBase.cs" />
     <Compile Include="SshSessionGeneric.cs" />
   </ItemGroup>
