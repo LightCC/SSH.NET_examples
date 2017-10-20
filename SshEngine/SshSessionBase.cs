@@ -1,5 +1,5 @@
-﻿using System;
-using Renci.SshNet;
+﻿using Renci.SshNet;
+using System;
 using System.IO;
 
 namespace SshEngine
@@ -131,26 +131,27 @@ namespace SshEngine
 
         public bool ExecuteCommandInShell()
         {
-            if (Connect())
-            {
-                var shellIn = new StreamWriter(_in);
-                var shellOut = new StreamReader(_out);
-                var shellErr = new StreamReader(_err);
+            //if (Connect())
+            //{
+            //    var shellIn = new StreamWriter(_in);
+            //    var shellOut = new StreamReader(_out);
+            //    var shellErr = new StreamReader(_err);
 
-                shellIn.WriteLine(this.Cmd);
-                shellIn.Flush();
+                //shellIn.WriteLine(this.Cmd);
+                //shellIn.Flush();
 
-                _stdoutText = shellOut.ReadToEnd();
-                _stderrText = shellErr.ReadToEnd();
+                //_stdoutText = shellOut.ReadToEnd();
+                //_stderrText = shellErr.ReadToEnd();
 
-                IsExecuted = true;
-            }
-            else
-            {
-                _stdoutText = null;
-                _stderrText = null;
-                IsExecuted = false;
-            }
+            //    IsExecuted = true;
+            //}
+            //else
+            //{
+            //    _stdoutText = null;
+            //    _stderrText = null;
+            //    IsExecuted = false;
+            //}
+            IsExecuted = false;
             return IsExecuted;
 
         }

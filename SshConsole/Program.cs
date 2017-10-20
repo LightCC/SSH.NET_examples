@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ssh_ex_console.cs
+namespace SshConsole
 {
     class Program
     {
@@ -19,5 +19,6 @@ namespace ssh_ex_console.cs
 
             sshEx.ManualSingleCommandLoop();
         }
+
     }
 }

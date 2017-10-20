@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Xml.Linq;
 using SshEngine;
 
-namespace ssh_ex_console.cs
+namespace SshConsole
 {
     public class SshConsole
     {
@@ -34,7 +35,7 @@ namespace ssh_ex_console.cs
                 ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
                 
                 Console.WriteLine("---");
-                cmd = "echo $USER";
+                cmd = "pwd; cd ..; pwd; echo $USER";
                 ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
                 
                 Console.WriteLine("---");
@@ -108,10 +109,10 @@ namespace ssh_ex_console.cs
                 Console.WriteLine("Username: {0}", _localSsh.Username);
                 Console.WriteLine("Password: {0}", _localSsh.Password);
                 Console.WriteLine();
-                Console.Write("Enter new Host and User Info (y/n)? ");
+                Console.Write("Use this Host and User Info (y/n)? ");
                 inputUseHost = Console.ReadLine().ToLower().Trim();
 
-                if (inputUseHost == "y")
+                if (inputUseHost == "n")
                 {
                     Console.Write("New Host (Name/IP): ");
                     _localSsh.HostName = Console.ReadLine().Trim();
@@ -135,13 +136,18 @@ namespace ssh_ex_console.cs
                     } // else do nothing - they just hit "Enter" or entered all whitespac
 
                     Console.Write("Password: ");
-                    _localSsh.Password = Console.ReadLine().Trim();
+                    input = Console.ReadLine().Trim();
+                    if (input.Length > 0)
+                    {
+                        _localSsh.Password = input;
+                    }
                     Console.WriteLine();
                 }
-            } while (inputUseHost != "n" );
+            } while (inputUseHost == "n" );
 
             _localSsh.UpdateInfoWithPasswordAuthentication();
 
+            // save current values (new or old) into the local user.settings file
             Properties.Settings.Default.HostName = _localSsh.HostName;
             Properties.Settings.Default.HostPort = _localSsh.HostPort;
             Properties.Settings.Default.Username = _localSsh.Username;
