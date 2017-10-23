@@ -25,7 +25,7 @@ namespace SshConsole.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Localhost")]
+        [global::System.Configuration.DefaultSettingValueAttribute("DefaultHost")]
         public string HostName {
             get {
                 return ((string)(this["HostName"]));
