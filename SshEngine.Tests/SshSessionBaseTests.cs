@@ -17,21 +17,23 @@ namespace SshEngine.Tests.SshSessionBaseTests
         public void ExecuteSingleCommand_ReturnsFalseWithBadIpAddress(string host, int port, string user, string pass)
         {
             var sut = new SshSessionBase(host, port, user, pass);
-            bool result = sut.ExecuteSingleCommand("echo test");
+            var cmd = new SshCmdBase(sut);
+            sut.ExecuteBaseSingleCommand(cmd, "echo test");
 
-            result.Should().BeFalse();
+            cmd.IsExecuted.Should().BeFalse();
         }
 
         [Fact]
         public void ExecuteSingleCommand_DoesNotThrowExceptionWithBadIpAddress()
         {
             var sut = new SshSessionBase("0.0.0.0", 22, "user", "pass");
-            Action act = () => sut.ExecuteSingleCommand("echo test");
+            var cmd = new SshCmdBase(sut);
+            Action act = () => sut.ExecuteBaseSingleCommand(cmd, "echo test");
 
             act.ShouldNotThrow();
-            sut.Cmd.Should().Be("echo test");
-            sut.StdOutText.Should().BeNull();
-            sut.StdErrText.Should().BeNull();
+            cmd.CmdText.Should().Be("echo test");
+            cmd.StdOutText.Should().BeNull();
+            cmd.StdErrText.Should().BeNull();
         }
 
         [Theory]
@@ -42,7 +44,8 @@ namespace SshEngine.Tests.SshSessionBaseTests
         public void ExecuteSingleCommand_ThrowsApplicationExceptionWithDefaultData(string host, int port, string user, string pass)
         {
             var sut = new SshSessionBase(host, port, user, pass);
-            Action act = () => sut.ExecuteSingleCommand("echo test");
+            var cmd = new SshCmdBase(sut);
+            Action act = () => sut.ExecuteBaseSingleCommand(cmd, "echo test");
 
             act.ShouldThrow<ApplicationException>()
                 .WithMessage("Connection Info not set!");

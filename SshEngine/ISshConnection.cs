@@ -16,7 +16,7 @@ namespace SshEngine
         ConnectionInfo Info { get; }
         AuthenticationMethod Auth { get; set; }
 
-        bool ExecuteSingleCommand();
+        void ExecuteBaseSingleCommand(ISshCmd cmd, string cmdtxt);
     }
 
 }

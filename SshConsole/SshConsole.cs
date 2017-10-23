@@ -29,27 +29,24 @@ namespace SshConsole
         public void TestBasicSshCommandsWithStream()
         {
             {
-                string cmd;
-                
-                cmd = "echo \"This is StdOut\"; echo \"This is StdErr\" >&2";
-                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
-                
-                Console.WriteLine("---");
-                cmd = "pwd; cd ..; pwd; echo $USER";
-                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
-                
-                Console.WriteLine("---");
-                cmd = "pwd";
-                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
-                
-                Console.WriteLine("---");
-                cmd = "df -h";
-                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
-                
-                Console.WriteLine();
+                var cmd = new SshCmdBase(_localSsh);
 
-                //Used with unit test framework
-                //Assert.Inconclusive();
+                cmd.CmdText = "echo \"This is StdOut\"; echo \"This is StdErr\" >&2";
+                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
+
+                Console.WriteLine("---");
+                cmd.CmdText = "pwd; cd ..; pwd; echo $USER";
+                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
+
+                Console.WriteLine("---");
+                cmd.CmdText = "pwd";
+                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
+
+                Console.WriteLine("---");
+                cmd.CmdText = "df -h";
+                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
+
+                Console.WriteLine();
             }
         }
 
@@ -66,27 +63,29 @@ namespace SshConsole
         /// </summary>
         public void ManualSingleCommandLoop()
         {
-            string cmd;
+            string cmdInput;
+            var cmd = new SshCmdBase(_localSsh);
 
             do
             {
                 Console.Write("{0}:{1} > ", _localSsh.HostName, _localSsh.HostPort);
-                cmd = Console.ReadLine().Trim();
-                if (cmd.Length > 0 && cmd.ToLower() != "exit")
+                cmdInput = Console.ReadLine().Trim();
+                if (cmdInput.Length > 0 && cmdInput.ToLower() != "exit")
                 {
                     Console.WriteLine();
-                    _localSsh.ExecuteSingleCommand(cmd);
-                    if (_localSsh.StdOutText.Length > 0)
+                    cmd.CmdText = cmdInput;
+                    _localSsh.ExecuteBaseSingleCommand(cmd);
+                    if (cmd.StdOutText.Length > 0)
                     {
-                        Console.WriteLine(_localSsh.StdOutText);
+                        Console.WriteLine(cmd.StdOutText);
                     }
-                    if(_localSsh.StdErrText.Length > 0)
+                    if(cmd.StdErrText.Length > 0)
                     {
                         Console.WriteLine("[[StdErr]]");
-                        Console.WriteLine(_localSsh.StdErrText);
+                        Console.WriteLine(cmd.StdErrText);
                     }
                 }
-            } while (cmd.ToLower() != "exit");
+            } while (cmdInput.ToLower() != "exit");
 
             Console.WriteLine();
 
@@ -164,24 +163,25 @@ namespace SshConsole
         /// <param name="sshSess">SSH Session to send command to</param>
         /// <param name="cmd">string command to execute</param>
         /// <returns></returns>
-        public static bool ExecuteSshCmdWithFullConsoleOutput(SshSessionBase sshSess, string cmd = null)
+        public static bool ExecuteSshCmdWithFullConsoleOutput(SshSessionBase sshSess, ISshCmd cmd, string cmdInput = null)
         {
-            if (cmd == null) { cmd = sshSess.Cmd; }
+            if (cmdInput != null) { cmd.CmdText = cmdInput; }
 
-            if (sshSess.ExecuteSingleCommand(cmd))
+            sshSess.ExecuteBaseSingleCommand(cmd);
+            if (cmd.IsExecuted)
             {
-                Console.WriteLine("COMMAND: \"{0}\"", sshSess.Cmd);
+                Console.WriteLine("COMMAND: \"{0}\"", cmd.CmdText);
 
-                if (sshSess.StdOutText.Length > 0)
+                if (cmd.StdOutText.Length > 0)
                 {
                     Console.WriteLine("[STDOUT]");
-                    Console.WriteLine(sshSess.StdOutText);
+                    Console.WriteLine(cmd.StdOutText);
                 }
 
-                if (sshSess.StdErrText.Length > 0)
+                if (cmd.StdErrText.Length > 0)
                 {
                     Console.WriteLine("[STDERR]");
-                    Console.WriteLine(sshSess.StdErrText);
+                    Console.WriteLine(cmd.StdErrText);
                 }
                 return true;
             }

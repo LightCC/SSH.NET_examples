@@ -13,7 +13,7 @@ namespace SshEngine.Tests
         [Fact]
         public void MultiCommandTest()
         {
-            string output1, output2;
+            string output1;
 
             var host = Config.SshHostName;
             var port = Config.SshHostPort;
@@ -25,20 +25,15 @@ namespace SshEngine.Tests
             using (var ssh = new SshClient(info))
             {
                 ssh.Connect();
-                var cmd1 = ssh.CreateCommand("pwd; cd ..; pwd");
+                var cmd1 = ssh.CreateCommand("pwd");
                 output1 = cmd1.Execute();
-                var cmd2 = ssh.CreateCommand("pwd; cd ..; pwd");
-                output2 = cmd2.Execute();
                 ssh.Disconnect();
-
             }
 
-            string output = output1 + Environment.NewLine + output2;
-            System.Windows.Forms.Clipboard.SetText(output);
-            System.Windows.Forms.MessageBox.Show(output);
+            //System.Windows.Forms.MessageBox.Show(output1);
 
             //Assert
-            output2.Should().NotContain("/home/");
+            output1.Should().Contain("/home/");
         }
 
         [Fact]
@@ -46,6 +41,8 @@ namespace SshEngine.Tests
         {
             //Console.WriteLine(Config.ToString());
             Config.Save();
+
+            Config.SshHostName.Should().Contain("192");
         }
 
     }

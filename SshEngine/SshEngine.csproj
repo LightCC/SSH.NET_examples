@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ISshCommand.cs" />
+    <Compile Include="ISshCmd.cs" />
     <Compile Include="ISshConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SshCmdBase.cs" />
