@@ -5,7 +5,7 @@ using System.Runtime.Remoting.Activation;
 
 namespace SshEngine
 {
-    public class SshSessionBase : ISshConnection, IDisposable
+    public class SshSessionBase : ISshSession, IDisposable
     {
         // ISshConnection Props
         private string _hostName;

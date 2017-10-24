@@ -7,7 +7,7 @@ using Renci.SshNet;
 
 namespace SshEngine
 {
-    public interface ISshConnection
+    public interface ISshSession
     {
         string HostName { get; set; }
         int HostPort { get; set; }
