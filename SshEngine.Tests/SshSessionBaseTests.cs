@@ -18,7 +18,7 @@ namespace SshEngine.Tests.SshSessionBaseTests
         {
             var sut = new SshSessionBase(host, port, user, pass);
             var cmd = new SshCmdBase(sut);
-            sut.ExecuteBaseSingleCommand(cmd, "echo test");
+            cmd.ExecuteCmd("echo test");
 
             cmd.IsExecuted.Should().BeFalse();
         }
@@ -28,7 +28,7 @@ namespace SshEngine.Tests.SshSessionBaseTests
         {
             var sut = new SshSessionBase("0.0.0.0", 22, "user", "pass");
             var cmd = new SshCmdBase(sut);
-            Action act = () => sut.ExecuteBaseSingleCommand(cmd, "echo test");
+            Action act = () => cmd.ExecuteCmd("echo test");
 
             act.ShouldNotThrow();
             cmd.CmdText.Should().Be("echo test");
@@ -45,7 +45,7 @@ namespace SshEngine.Tests.SshSessionBaseTests
         {
             var sut = new SshSessionBase(host, port, user, pass);
             var cmd = new SshCmdBase(sut);
-            Action act = () => sut.ExecuteBaseSingleCommand(cmd, "echo test");
+            Action act = () => cmd.ExecuteCmd("echo test");
 
             act.ShouldThrow<ApplicationException>()
                 .WithMessage("Connection Info not set!");

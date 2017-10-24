@@ -13,6 +13,6 @@ namespace SshEngine
         string StdOutText { get; set; }
         string StdErrText { get; set; }
 
-        void ExecuteCmd();
+        void ExecuteCmd(string cmdText);
     }
 }

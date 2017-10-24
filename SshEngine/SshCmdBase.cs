@@ -32,17 +32,11 @@ namespace SshEngine
             StdErrText = null;
         }
 
-        public virtual void ExecuteCmd()
+        public virtual void ExecuteCmd(string cmdText = null)
         {
-            
+            if (cmdText != null) { this.CmdText = cmdText; }
 
-            //var cmdobj = ssh.CreateCommand(CmdText);
-            //StdOutText = cmdobj.Execute();
-
-            //var reader = new StreamReader(cmdobj.ExtendedOutputStream);
-            //StdErrText = reader.ReadToEnd();
-
-            //IsExecuted = true;
+            _sshSession.ExecuteBaseSingleCommand(this);
         }
 
     }

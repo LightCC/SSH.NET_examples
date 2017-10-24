@@ -131,24 +131,15 @@ namespace SshEngine
 
         /// <summary>
         /// Execute a single command on the SSH Connection
-        /// This version explicitly gives the command, rather than using the property
-        /// StdOut and StdErrText are put into the local properties
+        /// The text command comes from the cmd.CmdText property
+        /// cmd.StdOutText is the command output from StdOut (empty string if none)
+        /// cmd.StdErrText is the command output from StdErr (empty string if none)
         /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="cmdtxt"></param>
-        public void ExecuteBaseSingleCommand(ISshCmd cmd, string cmdtxt)
-        {
-            // Command is explicit, so write it into local SshSessionBase _cmd first
-            cmd.CmdText = cmdtxt;
-            ExecuteBaseSingleCommand(cmd);
-        }
-
+        /// <param name="cmd">an object of ISshCmd type</param>
         public void ExecuteBaseSingleCommand(ISshCmd cmd)
         {
             if (Connect())
             {
-                //cmd.ExecuteCmd();
-
                 var cmdobj = _ssh.CreateCommand(cmd.CmdText);
                 cmd.StdOutText = cmdobj.Execute();
 
@@ -156,7 +147,6 @@ namespace SshEngine
                 cmd.StdErrText = reader.ReadToEnd();
 
                 cmd.IsExecuted = true;
-
             }
             else
             {
