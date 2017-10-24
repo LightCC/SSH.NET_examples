@@ -29,22 +29,23 @@ namespace SshConsole
         public void TestBasicSshCommandsWithStream()
         {
             {
+                // Create a basic command object, using our existing SshSessionBase object
                 var cmd = new SshCmdBase(_localSsh);
 
                 cmd.CmdText = "echo \"This is StdOut\"; echo \"This is StdErr\" >&2";
-                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
+                ExecuteSshCmdWithFullConsoleOutput(cmd);
 
                 Console.WriteLine("---");
                 cmd.CmdText = "pwd; cd ..; pwd; echo $USER";
-                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
+                ExecuteSshCmdWithFullConsoleOutput(cmd);
 
                 Console.WriteLine("---");
                 cmd.CmdText = "pwd";
-                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
+                ExecuteSshCmdWithFullConsoleOutput(cmd);
 
                 Console.WriteLine("---");
                 cmd.CmdText = "df -h";
-                ExecuteSshCmdWithFullConsoleOutput(_localSsh, cmd);
+                ExecuteSshCmdWithFullConsoleOutput(cmd);
 
                 Console.WriteLine();
             }
@@ -163,11 +164,9 @@ namespace SshConsole
         /// <param name="sshSess">SSH Session to send command to</param>
         /// <param name="cmd">string command to execute</param>
         /// <returns></returns>
-        public static bool ExecuteSshCmdWithFullConsoleOutput(SshSessionBase sshSess, ISshCmd cmd, string cmdInput = null)
+        public static bool ExecuteSshCmdWithFullConsoleOutput(ISshCmd cmd, string cmdInput = null)
         {
-            if (cmdInput != null) { cmd.CmdText = cmdInput; }
-
-            sshSess.ExecuteBaseSingleCommand(cmd);
+            cmd.ExecuteCmd(cmdInput);
             if (cmd.IsExecuted)
             {
                 Console.WriteLine("COMMAND: \"{0}\"", cmd.CmdText);
