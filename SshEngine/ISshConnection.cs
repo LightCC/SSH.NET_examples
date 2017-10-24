@@ -15,6 +15,7 @@ namespace SshEngine
         string Password { get; set; }
         ConnectionInfo Info { get; }
         AuthenticationMethod Auth { get; set; }
+        int TunnelLevel { get; set; }
 
         void ExecuteBaseSingleCommand(ISshCmd cmd);
     }

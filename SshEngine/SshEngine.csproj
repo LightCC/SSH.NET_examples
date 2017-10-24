@@ -50,7 +50,6 @@
     <Compile Include="SshCmdBase.cs" />
     <Compile Include="SshCmdBash.cs" />
     <Compile Include="SshSessionBase.cs" />
-    <Compile Include="SshSessionGeneric.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

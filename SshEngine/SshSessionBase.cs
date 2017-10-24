@@ -1,6 +1,7 @@
 ﻿using Renci.SshNet;
 using System;
 using System.IO;
+using System.Runtime.Remoting.Activation;
 
 namespace SshEngine
 {
@@ -13,7 +14,7 @@ namespace SshEngine
         private string _password;
         private ConnectionInfo _info;
         private AuthenticationMethod _auth;
-
+        
         // ISshCmd Props
         // None for now - need to pass in ISshCmd
 
@@ -58,12 +59,15 @@ namespace SshEngine
             set { _auth = value; }
         }
 
-        public SshSessionBase(string hostName, int hostPort, string username, string password)
+        public int TunnelLevel { get; set; }
+
+        public SshSessionBase(string hostName, int hostPort, string username, string password, int tunnelLevel = 0)
         {
             _hostName = hostName;
             _hostPort = hostPort;
             _username = username;
             _password = password;
+            TunnelLevel = tunnelLevel;
 
             UpdateInfoWithPasswordAuthentication();
         }
